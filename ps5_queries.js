@@ -69,7 +69,7 @@ print("-------------------")
 
 results3 = db.oscars.aggregate({$match: {$and: [{year: {$gte: 1990}}, {year: {$lte: 1999}}], 
 										type: "BEST-PICTURE"}},
-										{$project: {_id: 0, year: 1, name: "$movie.name"}});
+										{$project: {_id: 0, year: 1, "movie.name": 1}});
 
 results3.forEach(printjson)
 
@@ -178,7 +178,8 @@ print()
 print("results of query 10")
 print("--------------------")
 
-results10 = 
+results10 = db.oscars.aggregate(	{$match: {year: 2003}},
+									{$project: {type: 1, person:"$person.name", movie: "$movie.name", _id: 0}});
 
 results10.forEach(printjson)
 
@@ -194,6 +195,10 @@ print()
 print("results of query 11")
 print("----------------------")
 
-results11 = 
+results11 = db.oscars.aggregate({$match: {$or: [{type: {"$in": ["BEST-ACTOR", "BEST-SUPPORTING-ACTOR"]}},{type: {"$in": ["BEST-ACTRESS", "BEST-SUPPORTING-ACTRESS"]}}]}},
+					{$group: {_id: "$person.name", types: {"$addToSet": "$type"}}},
+					{$match: {$or: [{"types": {"$all": ["BEST-ACTOR", "BEST-SUPPORTING-ACTOR"]}},{"types":{"$all": ["BEST-ACTRESS", "BEST-SUPPORTING-ACTRESS"]}}]}},
+					{$group: {_id: null, count: {$sum: 1}}},
+					{$project: {count: 1, _id: 0}});
 
 results11.forEach(printjson)
